@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"math"
+	"os"
 	"sort"
+	"strconv"
 )
 
 type Point struct {
@@ -13,6 +15,15 @@ type Point struct {
 }
 
 type Group []*Point
+
+type Dater struct {
+	FlyerMiles     int
+	GameTimes      float64
+	IcecreamLiters float64
+	DatingLabel    string
+}
+
+type Daters []*Dater
 
 func main() {
 	dataSet := Group{
@@ -34,6 +45,11 @@ func main() {
 	for _, inX := range inXs {
 		inX.classify(dataSet, 3)
 		fmt.Println(inX)
+	}
+
+	daters := file2matrix("datingTestSet.txt")
+	for _, dater := range daters[:20] {
+		fmt.Println(dater)
 	}
 }
 
@@ -83,4 +99,42 @@ func (group Group) Less(i, j int) bool {
 
 func (group Group) Swap(i, j int) {
 	group[i], group[j] = group[j], group[i]
+}
+
+func (dater Dater) String() string {
+	return fmt.Sprintf("[%d - %f - %f - %s]", dater.FlyerMiles, dater.GameTimes,
+		dater.IcecreamLiters, dater.DatingLabel)
+}
+
+func file2matrix(filename string) (daters Daters) {
+	file, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	for {
+		var v1, v2, v3, datingLabel string
+		_, err := fmt.Fscanln(file, &v1, &v2, &v3, &datingLabel)
+		if err != nil {
+			break
+		}
+
+		flyerMiles, err := strconv.Atoi(v1)
+		if err != nil {
+			continue
+		}
+		gameTimes, err := strconv.ParseFloat(v2, 64)
+		if err != nil {
+			continue
+		}
+		icecreamLiters, err := strconv.ParseFloat(v3, 64)
+		if err != nil {
+			continue
+		}
+
+		dater := &Dater{flyerMiles, gameTimes, icecreamLiters, datingLabel}
+		daters = append(daters, dater)
+	}
+	return
 }
