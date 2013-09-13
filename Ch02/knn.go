@@ -26,27 +26,7 @@ type Dater struct {
 type Daters []*Dater
 
 func main() {
-	dataSet := Group{
-		&Point{Position: []float64{1.0, 1.1}, Label: 'A'},
-		&Point{Position: []float64{1.0, 1.0}, Label: 'A'},
-		&Point{Position: []float64{0, 0}, Label: 'B'},
-		&Point{Position: []float64{0, 0.1}, Label: 'B'},
-	}
-
-	inXs := Group{
-		&Point{Position: []float64{0, 0}},
-		&Point{Position: []float64{0, 0.5}},
-		&Point{Position: []float64{0, 1}},
-		&Point{Position: []float64{0.5, 0.5}},
-		&Point{Position: []float64{1, 0}},
-		&Point{Position: []float64{1, 0.5}},
-		&Point{Position: []float64{1, 1}}}
-
-	for _, inX := range inXs {
-		inX.classify(dataSet, 3)
-		fmt.Println(inX)
-	}
-
+	classify0()
 	daters := file2matrix("datingTestSet.txt")
 	for _, dater := range daters[:20] {
 		fmt.Println(dater)
@@ -104,6 +84,29 @@ func (group Group) Swap(i, j int) {
 func (dater Dater) String() string {
 	return fmt.Sprintf("[%d - %f - %f - %s]", dater.FlyerMiles, dater.GameTimes,
 		dater.IcecreamLiters, dater.DatingLabel)
+}
+
+func classify0() {
+	dataSet := Group{
+		&Point{Position: []float64{1.0, 1.1}, Label: 'A'},
+		&Point{Position: []float64{1.0, 1.0}, Label: 'A'},
+		&Point{Position: []float64{0, 0}, Label: 'B'},
+		&Point{Position: []float64{0, 0.1}, Label: 'B'},
+	}
+
+	inXs := Group{
+		&Point{Position: []float64{0, 0}},
+		&Point{Position: []float64{0, 0.5}},
+		&Point{Position: []float64{0, 1}},
+		&Point{Position: []float64{0.5, 0.5}},
+		&Point{Position: []float64{1, 0}},
+		&Point{Position: []float64{1, 0.5}},
+		&Point{Position: []float64{1, 1}}}
+
+	for _, inX := range inXs {
+		inX.classify(dataSet, 3)
+		fmt.Println(inX)
+	}
 }
 
 func file2matrix(filename string) (daters Daters) {
