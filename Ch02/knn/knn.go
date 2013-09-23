@@ -85,8 +85,10 @@ func (group *Group) Append(point *Point) {
 			}
 		}
 	} else {
-		group.minVals = make([]float64, len(point.Positions))
-		group.maxVals = make([]float64, len(point.Positions))
+		length := len(point.Positions)
+		group.minVals = make([]float64, length)
+		group.maxVals = make([]float64, length)
+		group.ranges = make([]float64, length)
 		copy(group.minVals, point.Positions)
 		copy(group.maxVals, point.Positions)
 	}
@@ -128,4 +130,12 @@ func (group *Group) Classify(point *Point, k int) string {
 		}
 	}
 	return result
+}
+
+func NewGroup(points ...*Point) *Group {
+	group := new(Group)
+	for index := range points {
+		group.Append(points[index])
+	}
+	return group
 }
