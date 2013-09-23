@@ -29,8 +29,6 @@ func classify0() {
 
 	for index := range inXs.Points {
 		inX = inXs.Points[index]
-		inX.Classify(dataSet, 3)
-		fmt.Println(inX)
+		fmt.Println(dataSet.Classify(inX, 3))
 	}
-
 }

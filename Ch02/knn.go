@@ -36,9 +36,9 @@ type Daters struct {
 }
 
 func main() {
-	//classify0()
-	daters := file2matrix("datingTestSet.txt")
-	daters.autoNorm()
+	classify0()
+	// daters := file2matrix("datingTestSet.txt")
+	// daters.autoNorm()
 	// for _, dater := range daters[:20] {
 	// 	fmt.Println(dater)
 	// }
@@ -51,8 +51,8 @@ func main() {
 	// daters.Append(dd2)
 	// daters.Append(dd3)
 	// daters.autoNorm()
-	fmt.Printf("ranges: %v\n", daters.ranges)
-	fmt.Printf("minVals: %v\n", daters.minVals)
+	// fmt.Printf("ranges: %v\n", daters.ranges)
+	// fmt.Printf("minVals: %v\n", daters.minVals)
 	// for _, dater := range daters.daters {
 	// 	fmt.Println(dater)
 	// }

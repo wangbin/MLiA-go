@@ -16,7 +16,11 @@ type Point struct {
 }
 
 func (point Point) String() string {
-	return fmt.Sprintf("%v - %s", point.Positions, point.Label)
+	if len(point.Label) > 0 {
+		return fmt.Sprintf("%v - %s", point.Positions, point.Label)
+	} else {
+		return fmt.Sprintf("%v", point.Positions)
+	}
 }
 
 func (point *Point) autoNorm(minVals []float64, ranges []float64) {
@@ -28,36 +32,27 @@ func (point *Point) autoNorm(minVals []float64, ranges []float64) {
 	}
 }
 
-func (p1 *Point) calculateDistance(p2 *Point) {
-	distance := 0.0
+func (p1 *Point) Distance(p2 *Point) (distance float64) {
 	for index := range p1.Positions {
 		distance += math.Pow(p1.Positions[index]-p2.Positions[index], 2)
 	}
-	p1.distance = math.Sqrt(distance)
+	distance = math.Sqrt(distance)
+	return
 }
 
-func (inX *Point) Classify(group *Group, k int) {
-	for _, p := range group.Points {
-		p.calculateDistance(inX)
-	}
-	sort.Sort(group)
-	classCount := make(map[string]int)
-	for _, p := range group.Points[:k] {
-		if _, ok := classCount[p.Label]; ok {
-			classCount[p.Label] += 1
-		} else {
-			classCount[p.Label] = 1
+func NewPoint(params ...interface{}) *Point {
+	point := new(Point)
+	for _, param := range params {
+		switch param.(type) {
+		case string:
+			point.Label = param.(string)
+		case int:
+			point.Positions = append(point.Positions, float64(param.(int)))
+		default:
+			point.Positions = append(point.Positions, param.(float64))
 		}
 	}
-	var result string
-	maxCount := 0
-	for label, count := range classCount {
-		if count > maxCount {
-			maxCount = count
-			result = label
-		}
-	}
-	inX.Label = result
+	return point
 }
 
 type Group struct {
@@ -90,8 +85,8 @@ func (group *Group) Append(point *Point) {
 			}
 		}
 	} else {
-		//group.minVals = make([]float64, len(point.Positions))
-		//group.maxVals = make([]float64, len(point.Positions))
+		group.minVals = make([]float64, len(point.Positions))
+		group.maxVals = make([]float64, len(point.Positions))
 		copy(group.minVals, point.Positions)
 		copy(group.maxVals, point.Positions)
 	}
@@ -109,4 +104,28 @@ func (group *Group) AutoNorm() {
 		point = group.Points[index]
 		point.autoNorm(group.minVals, group.ranges)
 	}
+}
+
+func (group *Group) Classify(point *Point, k int) string {
+	for _, p := range group.Points {
+		p.distance = p.Distance(point)
+	}
+	sort.Sort(group)
+	classCount := make(map[string]int)
+	for _, p := range group.Points[:k] {
+		if _, ok := classCount[p.Label]; ok {
+			classCount[p.Label] += 1
+		} else {
+			classCount[p.Label] = 1
+		}
+	}
+	var result string
+	maxCount := 0
+	for label, count := range classCount {
+		if count > maxCount {
+			maxCount = count
+			result = label
+		}
+	}
+	return result
 }
