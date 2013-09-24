@@ -8,8 +8,9 @@ import (
 )
 
 func main() {
-	classify0()
-	datingClassTest()
+	//classify0()
+	//datingClassTest()
+	classifyPerson()
 }
 
 func classify0() {
@@ -76,4 +77,35 @@ func datingClassTest() {
 	}
 	fmt.Printf("the total error rate is: %f\n", errorCount/float64(numTestVecs))
 	fmt.Println(errorCount)
+}
+
+func classifyPerson() {
+	dataSet := file2matrix("datingTestSet.txt")
+	dataSet.AutoNorm()
+	var percentTatsStr, ffMilesStr, iceCreamStr string
+
+	fmt.Println("percentage of time spent playing video games?")
+	fmt.Scanln(&percentTatsStr)
+	percentTats, err := strconv.ParseFloat(percentTatsStr, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("frequent flier miles earned per year?")
+	fmt.Scanln(&ffMilesStr)
+	ffMiles, err := strconv.ParseFloat(ffMilesStr, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("liters of ice cream consumed per year?")
+	fmt.Scanln(&iceCreamStr)
+	iceCream, err := strconv.ParseFloat(iceCreamStr, 64)
+	if err != nil {
+		panic(err)
+	}
+	p := knn.NewPoint(percentTats, ffMiles, iceCream)
+	result := dataSet.Classify(p, 3)
+	fmt.Printf("You will probably like this person: %s\n", result)
+
 }

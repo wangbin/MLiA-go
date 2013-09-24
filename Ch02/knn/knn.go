@@ -106,6 +106,19 @@ func (group *Group) AutoNorm() {
 }
 
 func (group *Group) Classify(point *Point, k int) string {
+	needAutoNorm := false
+	for index, position := range point.Positions {
+		minVal, maxVal := group.minVals[index], group.maxVals[index]
+		if position > maxVal || position < minVal {
+			needAutoNorm = true
+			break
+		}
+	}
+
+	if needAutoNorm {
+		point.autoNorm(group.minVals, group.ranges)
+	}
+
 	for _, p := range group.Points {
 		p.distance = p.Distance(point)
 	}
