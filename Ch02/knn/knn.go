@@ -3,10 +3,7 @@ package knn
 import (
 	"fmt"
 	"math"
-	//	"os"
 	"sort"
-
-//	"strconv"
 )
 
 type Point struct {
@@ -114,11 +111,19 @@ func (group *Group) Classify(point *Point, k int) string {
 	}
 	sort.Sort(group)
 	classCount := make(map[string]int)
+	distanceCount := make(map[string]float64)
 	for _, p := range group.Points[:k] {
 		if _, ok := classCount[p.Label]; ok {
 			classCount[p.Label] += 1
 		} else {
 			classCount[p.Label] = 1
+		}
+		if distance, ok := distanceCount[p.Label]; ok {
+			if distance > p.distance {
+				distanceCount[p.Label] = p.distance
+			}
+		} else {
+			distanceCount[p.Label] = p.distance
 		}
 	}
 	var result string
@@ -127,6 +132,11 @@ func (group *Group) Classify(point *Point, k int) string {
 		if count > maxCount {
 			maxCount = count
 			result = label
+		}
+		if count == maxCount {
+			if distanceCount[result] > distanceCount[label] {
+				result = label
+			}
 		}
 	}
 	return result
