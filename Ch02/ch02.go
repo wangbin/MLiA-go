@@ -104,7 +104,7 @@ func classifyPerson() {
 	if err != nil {
 		panic(err)
 	}
-	p := knn.NewPoint(percentTats, ffMiles, iceCream)
+	p := knn.NewPoint(ffMiles, percentTats, iceCream)
 	result := dataSet.Classify(p, 3)
 	fmt.Printf("You will probably like this person: %s\n", result)
 

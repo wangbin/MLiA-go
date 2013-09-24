@@ -37,6 +37,15 @@ func (p1 *Point) Distance(p2 *Point) (distance float64) {
 	return
 }
 
+func (point Point) isNormalized() bool {
+	for _, position := range point.Positions {
+		if position > 1.0 {
+			return false
+		}
+	}
+	return true
+}
+
 func NewPoint(params ...interface{}) *Point {
 	point := new(Point)
 	for _, param := range params {
@@ -106,37 +115,19 @@ func (group *Group) AutoNorm() {
 }
 
 func (group *Group) Classify(point *Point, k int) string {
-	needAutoNorm := false
-	for index, position := range point.Positions {
-		minVal, maxVal := group.minVals[index], group.maxVals[index]
-		if position > maxVal || position < minVal {
-			needAutoNorm = true
-			break
-		}
-	}
-
-	if needAutoNorm {
+	if !point.isNormalized() {
 		point.autoNorm(group.minVals, group.ranges)
 	}
-
 	for _, p := range group.Points {
 		p.distance = p.Distance(point)
 	}
 	sort.Sort(group)
 	classCount := make(map[string]int)
-	distanceCount := make(map[string]float64)
 	for _, p := range group.Points[:k] {
 		if _, ok := classCount[p.Label]; ok {
 			classCount[p.Label] += 1
 		} else {
 			classCount[p.Label] = 1
-		}
-		if distance, ok := distanceCount[p.Label]; ok {
-			if distance > p.distance {
-				distanceCount[p.Label] = p.distance
-			}
-		} else {
-			distanceCount[p.Label] = p.distance
 		}
 	}
 	var result string
@@ -147,7 +138,7 @@ func (group *Group) Classify(point *Point, k int) string {
 			result = label
 		}
 		if count == maxCount {
-			if distanceCount[result] > distanceCount[label] {
+			if result > label {
 				result = label
 			}
 		}
