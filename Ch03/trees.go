@@ -7,6 +7,10 @@ import (
 	"math"
 )
 
+const (
+	Labels = []string{"no surfacing", "flippers"}
+)
+
 func main() {
 	dataSet := createDataSet()
 	// fmt.Println(calcShannonEnt(dataSet))
@@ -26,7 +30,7 @@ func main() {
 
 	// fmt.Println(chooseBestFeatureToSplit(dataSet))
 
-	fmt.Println(createTree(dataSet, []string{"no surfacing", "flippers"}))
+	fmt.Println(createTree(dataSet, Labels))
 }
 
 func createDataSet() *knn.Group {
