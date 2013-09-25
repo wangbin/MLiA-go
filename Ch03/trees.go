@@ -7,10 +7,6 @@ import (
 	"math"
 )
 
-const (
-	Labels = []string{"no surfacing", "flippers"}
-)
-
 func main() {
 	dataSet := createDataSet()
 	// fmt.Println(calcShannonEnt(dataSet))
@@ -29,8 +25,8 @@ func main() {
 	// }
 
 	// fmt.Println(chooseBestFeatureToSplit(dataSet))
-
-	fmt.Println(createTree(dataSet, Labels))
+	labels := []string{"no surfacing", "flippers"}
+	fmt.Println(createTree(dataSet, labels))
 }
 
 func createDataSet() *knn.Group {
@@ -111,13 +107,32 @@ type Node struct {
 
 func (node Node) String() string {
 	if len(node.subNodes) == 0 {
-		return fmt.Sprintf("%v", node.name)
+		return fmt.Sprintf("'%v'", node.name)
 	}
 	var buffer bytes.Buffer
 	for key, subNode := range node.subNodes {
-		buffer.WriteString(fmt.Sprintf("{%v : %v}, ", key, subNode))
+		buffer.WriteString(fmt.Sprintf("{%v: %v}, ", key, subNode))
 	}
-	return fmt.Sprintf("{%v : %s}", node.name, buffer.String()[:buffer.Len()-2])
+	return fmt.Sprintf("{'%v': %s}", node.name, buffer.String()[:buffer.Len()-2])
+}
+
+func majorityCnt(points []*knn.Point) (result string) {
+	classCount := make(map[string]int)
+	for _, point := range points {
+		if _, ok := classCount[point.Label]; ok {
+			classCount[point.Label] += 1
+		} else {
+			classCount[point.Label] = 1
+		}
+	}
+	maxCount := 0
+	for label, count := range classCount {
+		if count > maxCount {
+			maxCount = count
+			result = label
+		}
+	}
+	return
 }
 
 func createTree(dataSet *knn.Group, labels []string) *Node {
@@ -137,7 +152,7 @@ func createTree(dataSet *knn.Group, labels []string) *Node {
 		}
 	}
 	if isClassEqual {
-		myTree = &Node{name: dataSet.Points[0].Label}
+		myTree = &Node{name: majorityCnt(dataSet.Points)}
 		return myTree
 	}
 
@@ -153,7 +168,8 @@ func createTree(dataSet *knn.Group, labels []string) *Node {
 	myTree = &Node{name: bestFeatLabel}
 	myTree.subNodes = make(map[interface{}]*Node)
 	for value := range uniqueVals {
-		myTree.subNodes[value] = createTree(splitDataSet(dataSet, bestFeat, value), newLabels)
+		myTree.subNodes[value] = createTree(splitDataSet(dataSet, bestFeat, value),
+			newLabels)
 	}
 	return myTree
 }
