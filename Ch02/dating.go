@@ -8,18 +8,8 @@ import (
 )
 
 func main() {
-	//classify0()
-	//datingClassTest()
-	classifyPerson()
-}
-
-func classify0() {
-	dataSet := knn.NewGroup(knn.NewPoint(1.0, 1.1, "A"), knn.NewPoint(1.0, 1.0, "A"),
-		knn.NewPoint(0, 0, "B"), knn.NewPoint(0, 0.1, "B"))
-
-	var inX *knn.Point
-	inX = knn.NewPoint(1, 0)
-	fmt.Println(dataSet.Classify(inX, 3))
+	datingClassTest()
+	//classifyPerson()
 }
 
 func file2matrix(filename string) *knn.Group {
@@ -65,13 +55,11 @@ func datingClassTest() {
 	testData := make([]*knn.Point, numTestVecs)
 	copy(testData, dataSet.Points[:numTestVecs])
 	dataSet.Points = dataSet.Points[numTestVecs:]
-	var result string
-	for index, point := range testData {
-		result = dataSet.Classify(point, 3)
+	for _, point := range testData {
+		result, _ := dataSet.Classify(point, 3)
 		if result != point.Label {
 			fmt.Printf("the classifier came back with: %s, the real answer is: %s\n", result,
 				point.Label)
-			fmt.Println(index)
 			errorCount += 1.0
 		}
 	}
@@ -105,7 +93,7 @@ func classifyPerson() {
 		panic(err)
 	}
 	p := knn.NewPoint(ffMiles, percentTats, iceCream)
-	result := dataSet.Classify(p, 3)
+	result, _ := dataSet.Classify(p, 3)
 	fmt.Printf("You will probably like this person: %s\n", result)
 
 }
