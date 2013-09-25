@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	datingClassTest()
-	//classifyPerson()
+	//datingClassTest()
+	classifyPerson()
 }
 
 func file2matrix(filename string) *knn.Group {
