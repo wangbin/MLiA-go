@@ -9,24 +9,27 @@ import (
 
 func main() {
 	dataSet := createDataSet()
-	// fmt.Println(calcShannonEnt(dataSet))
+	fmt.Println(calcShannonEnt(dataSet))
 
 	// dataSet.Points[0].Label = "maybe"
 	// fmt.Println(calcShannonEnt(dataSet))
 
-	// newDataSet := splitDataSet(dataSet, 0, 1)
-	// for _, point := range newDataSet.Points {
-	// 	fmt.Println(point)
-	// }
+	newDataSet := splitDataSet(dataSet, 0, 1)
+	for _, point := range newDataSet.Points {
+		fmt.Println(point)
+	}
 
-	// newDataSet = splitDataSet(dataSet, 0, 0)
-	// for _, point := range newDataSet.Points {
-	// 	fmt.Println(point)
-	// }
+	newDataSet = splitDataSet(dataSet, 0, 0)
+	for _, point := range newDataSet.Points {
+		fmt.Println(point)
+	}
 
-	// fmt.Println(chooseBestFeatureToSplit(dataSet))
+	fmt.Println(chooseBestFeatureToSplit(dataSet))
+
 	labels := []string{"no surfacing", "flippers"}
-	fmt.Println(createTree(dataSet, labels))
+	myTree := createTree(dataSet, labels)
+	fmt.Println(myTree.Classify(labels, knn.NewPoint(1, 0)))
+	fmt.Println(myTree.Classify(labels, knn.NewPoint(1, 1)))
 }
 
 func createDataSet() *knn.Group {
@@ -101,8 +104,8 @@ func chooseBestFeatureToSplit(dataSet *knn.Group) int {
 }
 
 type Node struct {
-	name     interface{}
-	subNodes map[interface{}]*Node
+	name     string
+	subNodes map[float64]*Node
 }
 
 func (node Node) String() string {
@@ -111,9 +114,30 @@ func (node Node) String() string {
 	}
 	var buffer bytes.Buffer
 	for key, subNode := range node.subNodes {
-		buffer.WriteString(fmt.Sprintf("{%v: %v}, ", key, subNode))
+		buffer.WriteString(fmt.Sprintf("%v: %v, ", key, subNode))
 	}
-	return fmt.Sprintf("{'%v': %s}", node.name, buffer.String()[:buffer.Len()-2])
+	return fmt.Sprintf("{'%v': {%s}}", node.name, buffer.String()[:buffer.Len()-2])
+}
+
+func (node Node) Classify(featLabels []string, testVec *knn.Point) string {
+	var featIndex int
+	for index, label := range featLabels {
+		if label == node.name {
+			featIndex = index
+			break
+		}
+	}
+	var classLabel string
+	for key, node := range node.subNodes {
+		if testVec.Positions[featIndex] == key {
+			if len(node.subNodes) == 0 {
+				classLabel = node.name
+			} else {
+				classLabel = node.Classify(featLabels, testVec)
+			}
+		}
+	}
+	return classLabel
 }
 
 func majorityCnt(points []*knn.Point) (result string) {
@@ -166,10 +190,10 @@ func createTree(dataSet *knn.Group, labels []string) *Node {
 		uniqueVals[point.Positions[bestFeat]] = 1
 	}
 	myTree = &Node{name: bestFeatLabel}
-	myTree.subNodes = make(map[interface{}]*Node)
+	myTree.subNodes = make(map[float64]*Node)
 	for value := range uniqueVals {
-		myTree.subNodes[value] = createTree(splitDataSet(dataSet, bestFeat, value),
-			newLabels)
+		myTree.subNodes[value] = createTree(
+			splitDataSet(dataSet, bestFeat, value), newLabels)
 	}
 	return myTree
 }
