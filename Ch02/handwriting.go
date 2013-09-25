@@ -71,33 +71,28 @@ func createDataSet() *knn.Group {
 
 func handwritingClassTest() {
 	dataSet := createDataSet()
-	ff := img2vector("testDigits/8_68.txt")
-	pp := &knn.Point{Positions: ff, Label: "8"}
-	result, cc := dataSet.Classify(pp, 3)
-	fmt.Println(result)
-	fmt.Println(cc)
-	// testFileList, err := ioutil.ReadDir(TestDigitsDir)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// mTest := len(testFileList)
-	// errorCount := 0.0
-	// var fileName, label string
-	// var vector []float64
-	// var point *knn.Point
-	// for _, testFile := range testFileList {
-	// 	fileName = testFile.Name()
-	// 	label = strings.Split(fileName, "_")[0]
-	// 	vector = img2vector(fmt.Sprintf("%s/%s", TestDigitsDir, fileName))
-	// 	point = &knn.Point{Positions: vector, Label: label}
-	// 	result, classCount := dataSet.Classify(point, 3)
-	// 	if result != label {
-	// 		errorCount += 1.0
-	// 		fmt.Printf("the classifier came back with: %s, the real answer is: %s.\n",
-	// 			result, label)
-	// 		fmt.Printf("file name: %s, class count: %v\n", fileName, classCount)
-	// 	}
-	// }
-	// fmt.Printf("the total number of errors is: %f\n", errorCount)
-	// fmt.Printf("the total error rate is: %f\n", errorCount/float64(mTest))
+	testFileList, err := ioutil.ReadDir(TestDigitsDir)
+	if err != nil {
+		panic(err)
+	}
+	mTest := len(testFileList)
+	errorCount := 0.0
+	var fileName, label string
+	var vector []float64
+	var point *knn.Point
+	for _, testFile := range testFileList {
+		fileName = testFile.Name()
+		label = strings.Split(fileName, "_")[0]
+		vector = img2vector(fmt.Sprintf("%s/%s", TestDigitsDir, fileName))
+		point = &knn.Point{Positions: vector, Label: label}
+		result, classCount := dataSet.Classify(point, 3)
+		if result != label {
+			errorCount += 1.0
+			fmt.Printf("the classifier came back with: %s, the real answer is: %s.\n",
+				result, label)
+			fmt.Printf("file name: %s, class count: %v\n", fileName, classCount)
+		}
+	}
+	fmt.Printf("the total number of errors is: %f\n", errorCount)
+	fmt.Printf("the total error rate is: %f\n", errorCount/float64(mTest))
 }
