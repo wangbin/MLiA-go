@@ -2,29 +2,31 @@ package main
 
 import (
 	"../Ch02/knn"
+	"bytes"
 	"fmt"
 	"math"
 )
 
 func main() {
 	dataSet := createDataSet()
-	fmt.Println(calcShannonEnt(dataSet))
+	// fmt.Println(calcShannonEnt(dataSet))
 
 	// dataSet.Points[0].Label = "maybe"
 	// fmt.Println(calcShannonEnt(dataSet))
 
-	newDataSet := splitDataSet(dataSet, 0, 1)
-	for _, point := range newDataSet.Points {
-		fmt.Println(point)
-	}
+	// newDataSet := splitDataSet(dataSet, 0, 1)
+	// for _, point := range newDataSet.Points {
+	// 	fmt.Println(point)
+	// }
 
-	newDataSet = splitDataSet(dataSet, 0, 0)
-	for _, point := range newDataSet.Points {
-		fmt.Println(point)
-	}
+	// newDataSet = splitDataSet(dataSet, 0, 0)
+	// for _, point := range newDataSet.Points {
+	// 	fmt.Println(point)
+	// }
 
-	fmt.Println(chooseBestFeatureToSplit(dataSet))
+	// fmt.Println(chooseBestFeatureToSplit(dataSet))
 
+	fmt.Println(createTree(dataSet, []string{"no surfacing", "flippers"}))
 }
 
 func createDataSet() *knn.Group {
@@ -96,4 +98,58 @@ func chooseBestFeatureToSplit(dataSet *knn.Group) int {
 		}
 	}
 	return bestFeature
+}
+
+type Node struct {
+	name     interface{}
+	subNodes map[interface{}]*Node
+}
+
+func (node Node) String() string {
+	if len(node.subNodes) == 0 {
+		return fmt.Sprintf("%v", node.name)
+	}
+	var buffer bytes.Buffer
+	for key, subNode := range node.subNodes {
+		buffer.WriteString(fmt.Sprintf("{%v : %v}, ", key, subNode))
+	}
+	return fmt.Sprintf("{%v : %s}", node.name, buffer.String()[:buffer.Len()-2])
+}
+
+func createTree(dataSet *knn.Group, labels []string) *Node {
+	var myTree *Node
+
+	if len(dataSet.Points[0].Positions) == 0 {
+		myTree = &Node{name: dataSet.Points[0].Label}
+		return myTree
+	}
+
+	label := dataSet.Points[0].Label
+	isClassEqual := true
+	for _, point := range dataSet.Points[1:] {
+		if point.Label != label {
+			isClassEqual = false
+			break
+		}
+	}
+	if isClassEqual {
+		myTree = &Node{name: dataSet.Points[0].Label}
+		return myTree
+	}
+
+	newLabels := make([]string, len(labels))
+	copy(newLabels, labels)
+	bestFeat := chooseBestFeatureToSplit(dataSet)
+	bestFeatLabel := labels[bestFeat]
+	newLabels = append(newLabels[:bestFeat], newLabels[bestFeat+1:]...)
+	uniqueVals := make(map[float64]int)
+	for _, point := range dataSet.Points {
+		uniqueVals[point.Positions[bestFeat]] = 1
+	}
+	myTree = &Node{name: bestFeatLabel}
+	myTree.subNodes = make(map[interface{}]*Node)
+	for value := range uniqueVals {
+		myTree.subNodes[value] = createTree(splitDataSet(dataSet, bestFeat, value), newLabels)
+	}
+	return myTree
 }
