@@ -67,7 +67,7 @@ func TestClassify(t *testing.T) {
 		NewPoint(0.5, 0.5), NewPoint(1, 0), NewPoint(1, 0.5))
 	labels := []string{"B", "B", "B", "B", "B", "A"}
 	for index, point := range testData.Points {
-		label := dataSet.Classify(point, 3)
+		label, _ := dataSet.Classify(point, 3)
 		if label != labels[index] {
 			t.Errorf("Label of Point(%v) should be %s, not %s.", point, labels[index],
 				label)

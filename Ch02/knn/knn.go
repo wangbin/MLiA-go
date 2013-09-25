@@ -114,14 +114,18 @@ func (group *Group) AutoNorm() {
 	}
 }
 
-func (group *Group) Classify(point *Point, k int) string {
+func (group *Group) Classify(point *Point, k int) (string, map[string]int) {
 	if !point.isNormalized() {
 		point.autoNorm(group.minVals, group.ranges)
 	}
-	for _, p := range group.Points {
+
+	var p *Point
+	for index := range group.Points {
+		p = group.Points[index]
 		p.distance = p.Distance(point)
 	}
 	sort.Sort(group)
+
 	classCount := make(map[string]int)
 	for _, p := range group.Points[:k] {
 		if _, ok := classCount[p.Label]; ok {
@@ -143,7 +147,7 @@ func (group *Group) Classify(point *Point, k int) string {
 			}
 		}
 	}
-	return result
+	return result, classCount
 }
 
 func NewGroup(points ...*Point) *Group {
