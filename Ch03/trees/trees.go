@@ -1,7 +1,7 @@
-package main
+package trees
 
 import (
-	"../Ch02/knn"
+	"../../Ch02/knn"
 	"bytes"
 	"encoding/gob"
 	"fmt"
@@ -9,8 +9,9 @@ import (
 	"os"
 )
 
+/*
 func main() {
-	dataSet := createDataSet()
+	dataSet, _ := createDataSet()
 	fmt.Println(calcShannonEnt(dataSet))
 
 	// dataSet.Points[0].Label = "maybe"
@@ -28,7 +29,6 @@ func main() {
 
 	fmt.Println(chooseBestFeatureToSplit(dataSet))
 
-	labels := []string{"no surfacing", "flippers"}
 	myTree := createTree(dataSet, labels)
 	fmt.Println(myTree.Classify(labels, knn.NewPoint(1, 0)))
 	fmt.Println(myTree.Classify(labels, knn.NewPoint(1, 1)))
@@ -36,19 +36,8 @@ func main() {
 	node, _ := GrabTree("myTree.dat")
 	fmt.Println(node)
 }
-
-func createDataSet() *knn.Group {
-	group := knn.NewGroup(
-		knn.NewPoint(1, 1, "yes"),
-		knn.NewPoint(1, 1, "yes"),
-		knn.NewPoint(1, 0, "no"),
-		knn.NewPoint(0, 1, "no"),
-		knn.NewPoint(0, 1, "no"))
-
-	return group
-}
-
-func calcShannonEnt(dataSet *knn.Group) (shannonEnt float64) {
+*/
+func CalcShannonEnt(dataSet *knn.Group) (shannonEnt float64) {
 	numEntries := len(dataSet.Points)
 	labelCounts := make(map[string]int)
 	for _, featVec := range dataSet.Points {
@@ -67,7 +56,7 @@ func calcShannonEnt(dataSet *knn.Group) (shannonEnt float64) {
 	return
 }
 
-func splitDataSet(dataSet *knn.Group, axis int, value float64) *knn.Group {
+func SplitDataSet(dataSet *knn.Group, axis int, value float64) *knn.Group {
 	retDataSet := knn.NewGroup()
 	for _, point := range dataSet.Points {
 		if point.Positions[axis] == value {
@@ -81,9 +70,9 @@ func splitDataSet(dataSet *knn.Group, axis int, value float64) *knn.Group {
 	return retDataSet
 }
 
-func chooseBestFeatureToSplit(dataSet *knn.Group) int {
+func ChooseBestFeatureToSplit(dataSet *knn.Group) int {
 	numFeatures := len(dataSet.Points[0].Positions)
-	baseEntropy := calcShannonEnt(dataSet)
+	baseEntropy := CalcShannonEnt(dataSet)
 	bestInfoGain := 0.0
 	bestFeature := -1
 	for i := 0; i < numFeatures; i++ {
@@ -95,9 +84,9 @@ func chooseBestFeatureToSplit(dataSet *knn.Group) int {
 		}
 		newEntropy := 0.0
 		for value := range uniqueVals {
-			subDataSet := splitDataSet(dataSet, i, value)
+			subDataSet := SplitDataSet(dataSet, i, value)
 			prob := float64(len(subDataSet.Points)) / float64(len(dataSet.Points))
-			newEntropy += prob * calcShannonEnt(subDataSet)
+			newEntropy += prob * CalcShannonEnt(subDataSet)
 		}
 		infoGain := baseEntropy - newEntropy
 		if infoGain > bestInfoGain {
@@ -185,7 +174,7 @@ func majorityCnt(points []*knn.Point) (result string) {
 	return
 }
 
-func createTree(dataSet *knn.Group, labels []string) *Node {
+func CreateTree(dataSet *knn.Group, labels []string) *Node {
 	var myTree *Node
 
 	if len(dataSet.Points[0].Positions) == 0 {
@@ -208,7 +197,7 @@ func createTree(dataSet *knn.Group, labels []string) *Node {
 
 	newLabels := make([]string, len(labels))
 	copy(newLabels, labels)
-	bestFeat := chooseBestFeatureToSplit(dataSet)
+	bestFeat := ChooseBestFeatureToSplit(dataSet)
 	bestFeatLabel := labels[bestFeat]
 	newLabels = append(newLabels[:bestFeat], newLabels[bestFeat+1:]...)
 	uniqueVals := make(map[float64]int)
@@ -218,8 +207,8 @@ func createTree(dataSet *knn.Group, labels []string) *Node {
 	myTree = &Node{Name: bestFeatLabel}
 	myTree.SubNodes = make(map[float64]*Node)
 	for value := range uniqueVals {
-		myTree.SubNodes[value] = createTree(
-			splitDataSet(dataSet, bestFeat, value), newLabels)
+		myTree.SubNodes[value] = CreateTree(
+			SplitDataSet(dataSet, bestFeat, value), newLabels)
 	}
 	return myTree
 }
