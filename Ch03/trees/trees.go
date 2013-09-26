@@ -9,34 +9,6 @@ import (
 	"os"
 )
 
-/*
-func main() {
-	dataSet, _ := createDataSet()
-	fmt.Println(calcShannonEnt(dataSet))
-
-	// dataSet.Points[0].Label = "maybe"
-	// fmt.Println(calcShannonEnt(dataSet))
-
-	newDataSet := splitDataSet(dataSet, 0, 1)
-	for _, point := range newDataSet.Points {
-		fmt.Println(point)
-	}
-
-	newDataSet = splitDataSet(dataSet, 0, 0)
-	for _, point := range newDataSet.Points {
-		fmt.Println(point)
-	}
-
-	fmt.Println(chooseBestFeatureToSplit(dataSet))
-
-	myTree := createTree(dataSet, labels)
-	fmt.Println(myTree.Classify(labels, knn.NewPoint(1, 0)))
-	fmt.Println(myTree.Classify(labels, knn.NewPoint(1, 1)))
-	StoreTree(myTree, "myTree.dat")
-	node, _ := GrabTree("myTree.dat")
-	fmt.Println(node)
-}
-*/
 func CalcShannonEnt(dataSet *knn.Group) (shannonEnt float64) {
 	numEntries := len(dataSet.Points)
 	labelCounts := make(map[string]int)
