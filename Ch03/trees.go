@@ -3,8 +3,10 @@ package main
 import (
 	"../Ch02/knn"
 	"bytes"
+	"encoding/gob"
 	"fmt"
 	"math"
+	"os"
 )
 
 func main() {
@@ -30,6 +32,9 @@ func main() {
 	myTree := createTree(dataSet, labels)
 	fmt.Println(myTree.Classify(labels, knn.NewPoint(1, 0)))
 	fmt.Println(myTree.Classify(labels, knn.NewPoint(1, 1)))
+	StoreTree(myTree, "myTree.dat")
+	node, _ := GrabTree("myTree.dat")
+	fmt.Println(node)
 }
 
 func createDataSet() *knn.Group {
@@ -104,40 +109,61 @@ func chooseBestFeatureToSplit(dataSet *knn.Group) int {
 }
 
 type Node struct {
-	name     string
-	subNodes map[float64]*Node
+	Name     string
+	SubNodes map[float64]*Node
 }
 
 func (node Node) String() string {
-	if len(node.subNodes) == 0 {
-		return fmt.Sprintf("'%v'", node.name)
+	if len(node.SubNodes) == 0 {
+		return fmt.Sprintf("'%v'", node.Name)
 	}
 	var buffer bytes.Buffer
-	for key, subNode := range node.subNodes {
+	for key, subNode := range node.SubNodes {
 		buffer.WriteString(fmt.Sprintf("%v: %v, ", key, subNode))
 	}
-	return fmt.Sprintf("{'%v': {%s}}", node.name, buffer.String()[:buffer.Len()-2])
+	return fmt.Sprintf("{'%v': {%s}}", node.Name, buffer.String()[:buffer.Len()-2])
 }
 
 func (node Node) Classify(featLabels []string, testVec *knn.Point) string {
 	var featIndex int
 	for index, label := range featLabels {
-		if label == node.name {
+		if label == node.Name {
 			featIndex = index
 			break
 		}
 	}
 	var classLabel string
-	for key, node := range node.subNodes {
+	for key, node := range node.SubNodes {
 		if testVec.Positions[featIndex] == key {
-			if len(node.subNodes) == 0 {
-				classLabel = node.name
+			if len(node.SubNodes) == 0 {
+				classLabel = node.Name
 			} else {
 				classLabel = node.Classify(featLabels, testVec)
 			}
 		}
 	}
 	return classLabel
+}
+
+func StoreTree(node *Node, filename string) error {
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		return err
+	}
+	encoder := gob.NewEncoder(file)
+	err = encoder.Encode(node)
+	return err
+}
+
+func GrabTree(filename string) (*Node, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	node := &Node{}
+	decoder := gob.NewDecoder(file)
+	err = decoder.Decode(node)
+	return node, err
 }
 
 func majorityCnt(points []*knn.Point) (result string) {
@@ -163,7 +189,7 @@ func createTree(dataSet *knn.Group, labels []string) *Node {
 	var myTree *Node
 
 	if len(dataSet.Points[0].Positions) == 0 {
-		myTree = &Node{name: dataSet.Points[0].Label}
+		myTree = &Node{Name: dataSet.Points[0].Label}
 		return myTree
 	}
 
@@ -176,7 +202,7 @@ func createTree(dataSet *knn.Group, labels []string) *Node {
 		}
 	}
 	if isClassEqual {
-		myTree = &Node{name: majorityCnt(dataSet.Points)}
+		myTree = &Node{Name: majorityCnt(dataSet.Points)}
 		return myTree
 	}
 
@@ -189,10 +215,10 @@ func createTree(dataSet *knn.Group, labels []string) *Node {
 	for _, point := range dataSet.Points {
 		uniqueVals[point.Positions[bestFeat]] = 1
 	}
-	myTree = &Node{name: bestFeatLabel}
-	myTree.subNodes = make(map[float64]*Node)
+	myTree = &Node{Name: bestFeatLabel}
+	myTree.SubNodes = make(map[float64]*Node)
 	for value := range uniqueVals {
-		myTree.subNodes[value] = createTree(
+		myTree.SubNodes[value] = createTree(
 			splitDataSet(dataSet, bestFeat, value), newLabels)
 	}
 	return myTree
