@@ -16,11 +16,18 @@ type Point struct {
 func NewPoint(params ...interface{}) *Point {
 	point := new(Point)
 	length := len(params)
-	point.Positions = make([]interface{}, length-1)
-	for i := 0; i < length-1; i++ {
-		point.Positions[i] = params[i]
+	var positionsLength int
+	switch params[length-1].(type) {
+	case string:
+		point.Label = params[length-1].(string)
+		positionsLength = length - 1
+	default:
+		positionsLength = length
 	}
-	point.Label = params[length-1].(string)
+	point.Positions = make([]interface{}, positionsLength)
+	for i, param := range params[:positionsLength] {
+		point.Positions[i] = param
+	}
 	return point
 }
 
