@@ -70,11 +70,10 @@ func ChooseBestFeatureToSplit(dataSet []*Point) int {
 	bestInfoGain := 0.0
 	bestFeature := -1
 	for i := 0; i < numFeatures; i++ {
+		// since golang has no set type, use map instead
 		uniqueVals := make(map[interface{}]bool)
 		for _, point := range dataSet {
-			if _, ok := uniqueVals[point.Positions[i]]; !ok {
-				uniqueVals[point.Positions[i]] = true
-			}
+			uniqueVals[point.Positions[i]] = true
 		}
 		newEntropy := 0.0
 		for value := range uniqueVals {
