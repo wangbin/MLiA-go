@@ -33,6 +33,19 @@ func SetOfWords2Vec(vocabList []string, input []string) []int {
 	return returnVec
 }
 
+func BagOfWords2VecMN(vocabList []string, inputSet []string) []int {
+	returnVec := make([]int, len(vocabList))
+	for _, word := range inputSet {
+		for index, vocab := range vocabList {
+			if vocab == word {
+				returnVec[index] += 1
+				break
+			}
+		}
+	}
+	return returnVec
+}
+
 func TrainNB0(trainMatrix [][]int, trainCategory []int) ([]float64, []float64,
 	float64) {
 	numTrainDocs := len(trainMatrix)
