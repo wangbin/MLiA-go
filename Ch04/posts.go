@@ -19,6 +19,10 @@ func loadDataSet() (postingList [][]string, classVec []int) {
 }
 
 func main() {
+	testingNB()
+}
+
+func testingNB() {
 	listOPosts, listClasses := loadDataSet()
 	myVocabList := bayes.CreateVocabList(listOPosts)
 	trainMat := make([][]int, 0)
@@ -26,5 +30,11 @@ func main() {
 		trainMat = append(trainMat, bayes.SetOfWords2Vec(myVocabList, postinDoc))
 	}
 	p0V, p1V, pAb := bayes.TrainNB0(trainMat, listClasses)
-	fmt.Printf("p0V = %f\np1V = %f\npAb = %f\n", p0V, p1V, pAb)
+	var testEntry []string
+	testEntry = []string{"love", "my", "dalmation"}
+	thisDoc := bayes.SetOfWords2Vec(myVocabList, testEntry)
+	fmt.Printf("%v classified as: %d\n", testEntry, bayes.ClassifyNB(thisDoc, p0V, p1V, pAb))
+	testEntry = []string{"stupid", "garbage"}
+	thisDoc = bayes.SetOfWords2Vec(myVocabList, testEntry)
+	fmt.Printf("%v classified as: %d\n", testEntry, bayes.ClassifyNB(thisDoc, p0V, p1V, pAb))
 }

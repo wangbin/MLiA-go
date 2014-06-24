@@ -74,3 +74,16 @@ func TrainNB0(trainMatrix [][]int, trainCategory []int) ([]float64, []float64,
 	}
 	return p0Vec, p1Vec, pAbusive
 }
+
+func ClassifyNB(vec2Classify []int, p0V []float64, p1V []float64, pClass1 float64) int {
+	p1 := math.Log(pClass1)
+	p0 := math.Log(1.0 - pClass1)
+	for index := range vec2Classify {
+		p1 += float64(vec2Classify[index]) * p1V[index]
+		p0 += float64(vec2Classify[index]) * p0V[index]
+	}
+	if p1 > p0 {
+		return 1
+	}
+	return 0
+}
