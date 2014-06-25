@@ -2,7 +2,9 @@ package bayes
 
 import (
 	"math"
+	"regexp"
 	"sort"
+	"strings"
 )
 
 func CreateVocabList(dataSet [][]string) []string {
@@ -99,4 +101,15 @@ func ClassifyNB(vec2Classify []int, p0V []float64, p1V []float64, pClass1 float6
 		return 1
 	}
 	return 0
+}
+
+func TextParse(bigString string) (tokens []string) {
+	re := regexp.MustCompile(`\W+`)
+
+	for _, token := range re.Split(bigString, -1) {
+		if len(token) > 2 {
+			tokens = append(tokens, strings.ToLower(token))
+		}
+	}
+	return
 }

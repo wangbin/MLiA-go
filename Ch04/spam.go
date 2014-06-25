@@ -5,24 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
-	"regexp"
-	"strings"
 	"time"
 )
 
 func main() {
 	spamTest()
-}
-
-func textParse(bigString string) (tokens []string) {
-	re := regexp.MustCompile(`\W+`)
-
-	for _, token := range re.Split(bigString, -1) {
-		if len(token) > 2 {
-			tokens = append(tokens, strings.ToLower(token))
-		}
-	}
-	return
 }
 
 func spamTest() {
@@ -37,7 +24,7 @@ func spamTest() {
 		if err != nil {
 			panic(err)
 		}
-		wordList = textParse(string(buf))
+		wordList = bayes.TextParse(string(buf))
 		docList = append(docList, wordList)
 		fullText = append(fullText, wordList...)
 		classList = append(classList, 1)
@@ -45,7 +32,7 @@ func spamTest() {
 		if err != nil {
 			panic(err)
 		}
-		wordList = textParse(string(buf))
+		wordList = bayes.TextParse(string(buf))
 		docList = append(docList, wordList)
 		fullText = append(fullText, wordList...)
 		classList = append(classList, 0)
