@@ -13,6 +13,7 @@ const (
 	SF_RSS_URL = "http://sfbay.craigslist.org/stp/index.rss"
 	NY_RSS_URL = "http://newyork.craigslist.org/stp/index.rss"
 	TIMEOUT    = 15
+	Threshold  = -6.0
 )
 
 var (
@@ -23,7 +24,7 @@ var (
 func main() {
 	getFeeds(SF_RSS_URL)
 	getFeeds(NY_RSS_URL)
-	localWords(ny_feed, sf_feed)
+	getTopWords(ny_feed, sf_feed)
 }
 
 func getFeeds(url string) {
@@ -87,7 +88,7 @@ func calcMostFreq(vocabList []string, fullText []string) []*tokenFreq {
 	return sortedFreq[:30]
 }
 
-func localWords(feed1, feed0 []*rss.Item) {
+func localWords(feed1, feed0 []*rss.Item) ([]string, []float64, []float64) {
 	var wordList []string
 	docList := make([][]string, 0)
 	fullText := make([]string, 0)
@@ -148,4 +149,48 @@ func localWords(feed1, feed0 []*rss.Item) {
 		}
 	}
 	fmt.Printf("the error rate is %f\n", float64(errorCount)/float64(len(testSet)))
+	return vocabList, p0V, p1V
+}
+
+type TopWord struct {
+	word string
+	freq float64
+}
+
+type TopWords []*TopWord
+
+func (this TopWords) Len() int {
+	return len(this)
+}
+
+func (this TopWords) Less(i, j int) bool {
+	return this[i].freq < this[j].freq
+}
+
+func (this TopWords) Swap(i, j int) {
+	this[i], this[j] = this[j], this[i]
+}
+
+func getTopWords(ny []*rss.Item, sf []*rss.Item) {
+	topNY := make(TopWords, 0)
+	topSF := make(TopWords, 0)
+	vocabList, p0V, p1V := localWords(ny, sf)
+	for i := 0; i < len(p0V); i++ {
+		if p0V[i] > Threshold {
+			topSF = append(topSF, &TopWord{vocabList[i], p0V[i]})
+		}
+		if p1V[i] > Threshold {
+			topNY = append(topNY, &TopWord{vocabList[i], p1V[i]})
+		}
+	}
+	sort.Sort(sort.Reverse(topNY))
+	sort.Sort(sort.Reverse(topSF))
+	fmt.Println("SF**SF**SF**SF**SF**SF**SF**SF**SF**SF**SF**SF**SF**SF**SF**SF**")
+	for _, topWord := range topSF {
+		fmt.Println(topWord.word)
+	}
+	fmt.Println("NY**NY**NY**NY**NY**NY**NY**NY**NY**NY**NY**NY**NY**NY**NY**NY**")
+	for _, topWord := range topNY {
+		fmt.Println(topWord.word)
+	}
 }
