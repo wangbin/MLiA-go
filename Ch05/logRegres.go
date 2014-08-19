@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"crypto/rand"
 	"fmt"
 	"io"
@@ -8,6 +9,7 @@ import (
 	"math/big"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Array []float64
@@ -187,10 +189,97 @@ func stocGradAscent1(dataMat Matrix, labelMat Array, numIter int) (weights Array
 	return
 }
 
+func classifyVector(inX Array, weights Array) float64 {
+	prob := sigmoid(inX.MultipleArray(weights).Sum())
+	if prob > 0.5 {
+		return 1.0
+	}
+	return 0.0
+}
+
+func colicTest() float64 {
+	frTrain, err := os.Open("horseColicTraining.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer frTrain.Close()
+	trainingSet := make(Matrix, 0)
+	trainingLabels := make(Array, 0)
+	scanner := bufio.NewScanner(frTrain)
+	for scanner.Scan() {
+		line := scanner.Text()
+		lineArray := strings.Split(line, "\t")
+		length := len(lineArray)
+		t := make(Array, 0)
+		for index, s := range lineArray {
+			f, err := strconv.ParseFloat(s, 64)
+			if err != nil {
+				panic(err)
+			}
+			if index == length-1 {
+				trainingLabels = append(trainingLabels, f)
+			} else {
+				t = append(t, f)
+			}
+		}
+		trainingSet = append(trainingSet, t)
+	}
+	if err := scanner.Err(); err != nil {
+		panic(err)
+	}
+	trainWeights := stocGradAscent1(trainingSet, trainingLabels, 1000)
+	errorCount := 0.0
+	numTestVec := 0.0
+	frTest, err := os.Open("horseColicTest.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer frTest.Close()
+	scanner = bufio.NewScanner(frTest)
+	for scanner.Scan() {
+		numTestVec += 1.0
+		line := scanner.Text()
+		lineArray := strings.Split(line, "\t")
+		length := len(lineArray)
+		t := make(Array, 0)
+		var label float64
+		for index, s := range lineArray {
+			f, err := strconv.ParseFloat(s, 64)
+			if err != nil {
+				panic(err)
+			}
+			if index == length-1 {
+				label = f
+			} else {
+				t = append(t, f)
+			}
+		}
+		if classifyVector(t, trainWeights) != label {
+			errorCount += 1.0
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		panic(err)
+	}
+	errorRate := errorCount / numTestVec
+	fmt.Printf("the error rate of this test is: %f\n", errorRate)
+	return errorRate
+}
+
+func multiTest() {
+	numTests := 10
+	errorSum := 0.0
+	for i := 0; i < numTests; i++ {
+		errorSum += colicTest()
+	}
+	fmt.Printf("after %d iterations the average error rate is: %f\n", numTests, errorSum/float64(numTests))
+}
+
 func main() {
 	dataMat, labelMat := loadDataSet()
 	fmt.Println(gradAscent(dataMat, labelMat))
 	fmt.Println(stocGradAscent0(dataMat, labelMat))
 	fmt.Println(stocGradAscent1(dataMat, labelMat, 150))
 	fmt.Println(stocGradAscent1(dataMat, labelMat, 500))
+	multiTest()
 }
