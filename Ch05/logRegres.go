@@ -1,9 +1,11 @@
 package main
 
 import (
+	"crypto/rand"
 	"fmt"
 	"io"
 	"math"
+	"math/big"
 	"os"
 	"strconv"
 )
@@ -162,8 +164,33 @@ func stocGradAscent0(dataMat Matrix, labelMat Array) (weights Array) {
 	return
 }
 
+func stocGradAscent1(dataMat Matrix, labelMat Array, numIter int) (weights Array) {
+	m, n := dataMat.Shape()
+	for i := 0; i < n; i++ {
+		weights = append(weights, 1.0)
+	}
+	for j := 0; j < numIter; j++ {
+		dataIndex := make([]int, m)
+		for i := 0; i < m; i++ {
+			dataIndex[i] = i
+		}
+		for i := 0; i < m; i++ {
+			alpha := 4.0/(1.0+float64(j)+float64(i)) + 0.001
+			randIndex64, _ := rand.Int(rand.Reader, big.NewInt(int64(len(dataIndex))))
+			randIndex, _ := strconv.Atoi(randIndex64.String())
+			h := sigmoid(dataMat[randIndex].MultipleArray(weights).Sum())
+			error := labelMat[randIndex] - h
+			weights = weights.Add(dataMat[randIndex].Multiple(error).Multiple(alpha))
+			dataIndex = append(dataIndex[:randIndex], dataIndex[randIndex+1:]...)
+		}
+	}
+	return
+}
+
 func main() {
 	dataMat, labelMat := loadDataSet()
 	fmt.Println(gradAscent(dataMat, labelMat))
 	fmt.Println(stocGradAscent0(dataMat, labelMat))
+	fmt.Println(stocGradAscent1(dataMat, labelMat, 150))
+	fmt.Println(stocGradAscent1(dataMat, labelMat, 500))
 }
